@@ -1,15 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using SimpleHashing.Net;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using TradeMatchLogin.Dtos;
 using TradeMatchLogin.Models;
 using TradeMatchLogin.Repositories;
+using TradeMatchLogin.Utils;
 using TradeMatchLogin.Validators.DtoValidators;
 using ValidationResult = FluentValidation.Results.ValidationResult;
-
 
 namespace TradeMatchLogin.Controllers
 {
@@ -21,17 +17,17 @@ namespace TradeMatchLogin.Controllers
         private readonly UserRepository _userRepo;
         private readonly LoginRepository _loginRepo;
         private readonly AddressRepository _addressRepo;
-        private readonly IConfiguration _configuration;
+        private readonly JwtGenerator _jwtGenerator;
         private static readonly ISimpleHash simpleHash = new SimpleHash();
 
         // Constructor
         public AuthController(UserRepository userRepo, LoginRepository loginRepo,
-               AddressRepository addressRepo, IConfiguration configuration)
+               AddressRepository addressRepo, JwtGenerator jwtGenerator)
         {
             _userRepo = userRepo;
             _loginRepo = loginRepo;
             _addressRepo = addressRepo;
-            _configuration = configuration;
+            _jwtGenerator = jwtGenerator;
         }
 
         // Register route
@@ -57,13 +53,16 @@ namespace TradeMatchLogin.Controllers
                     return BadRequestWithMessage("UserName already exists");
                 }
 
+                // Hash the password input
+                var hash = simpleHash.Compute(registerDto.Password);
+
                 // Add registerDTO data to relevent user models.
-                var user = AddUser(registerDto);
-                var login = AddLogin(registerDto, user.UserID);
-                AddAddress(registerDto, user.UserID);
+                var user = RepositoryUtils.AddUser(registerDto, _userRepo);
+                var login = RepositoryUtils.AddLogin(registerDto, user.UserID, _loginRepo, hash);
+                RepositoryUtils.AddAddress(registerDto, user.UserID, _addressRepo);
 
                 // Generate a json web token
-                var token = GenerateJsonWebToken(login);
+                var token = _jwtGenerator.GenerateJsonWebToken(user);
 
                 // Return OK with the token
                 return OkWithToken(token);
@@ -92,101 +91,16 @@ namespace TradeMatchLogin.Controllers
                     return BadRequestWithMessage("Invalid credentials");
                 }
 
+                var user = _userRepo.Get(login.UserID);
+
                 // Generate a json web token
-                var token = GenerateJsonWebToken(login);
+                var token = _jwtGenerator.GenerateJsonWebToken(user);
 
                 // Return OK with the token
                 return OkWithToken(token);
             }
             // Return a bad request with message.
             return BadRequestWithMessage("Invalid credentials");
-        }
-
-
-        // Function to generate a json web token.
-        private string GenerateJsonWebToken(Login login)
-        {
-            var jwtTokenHandler = new JwtSecurityTokenHandler();
-
-            var secretKey = Encoding.UTF8.GetBytes(_configuration.GetSection("JwtConfig:Secret").Value);
-
-            // Create a token descriptor
-            var tokenDescriptor = new SecurityTokenDescriptor()
-            {
-                Subject = new ClaimsIdentity(new []
-                {
-                    //new Claim("ID",  user.UserID.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Sub, login.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToUniversalTime().ToString())
-                }),
-
-                Expires = DateTime.Now.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256)
-            };
-
-            var token = jwtTokenHandler.CreateToken(tokenDescriptor);
-            var jwtToken = jwtTokenHandler.WriteToken(token);
-
-            return jwtToken;
-        }
-
-        // Create a new User object from the UserRegistrationDTO, add it to the repo and return it.
-        private User AddUser(RegisterDto registerDto)
-        {
-            // Create a new user
-            var user = new User()
-            {
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                Phone = registerDto.Phone,
-                Email = registerDto.Email,
-                ABN = registerDto.ABN,
-                BusinessName = registerDto.BusinessName,
-                Status = "Registered",
-                Role = registerDto.Role,
-            };
-
-            _userRepo.Add(user);
-
-            return user;
-        }
-
-        // Create a new Login object from the UserRegistrationDTO, add it to the repo and return it.
-        private Login AddLogin(RegisterDto registerDto, int userID)
-        {
-            // Hash the password input
-            var hash = simpleHash.Compute(registerDto.Password);
-
-                // Create a new login
-            var login = new Login()
-            {
-                // Create a new instance of SimpleHash.
-                UserName = registerDto.UserName,
-                PasswordHash = hash,
-                UserID = userID
-            };
-
-            _loginRepo.Add(login);
-
-            return login;
-        }
-
-        // Create a new Address object from the UserRegistrationDTO and add it to the repo.
-        private void AddAddress(RegisterDto registerDto, int userID)
-        {
-            // Create a new address
-            var address = new Address()
-            {
-                Number = registerDto.Number,
-                Street = registerDto.Street,
-                Suburb = registerDto.Suburb,
-                PostCode = registerDto.PostCode,
-                State = registerDto.State,
-                UserID = userID
-            };
-
-            _addressRepo.Add(address);
         }
 
         // Return a Bad request object with a message.
@@ -199,7 +113,7 @@ namespace TradeMatchLogin.Controllers
             });
         }
 
-        // Return a OK request object with a message.
+        // Return an OK request object with a message.
         private OkObjectResult OkWithToken(string token)
         {
             return Ok(new AuthResult()

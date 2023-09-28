@@ -6,7 +6,7 @@ using TradeMatchLogin.Repositories;
 
 namespace TradeMatchLogin.Controllers;
 
-[Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
@@ -25,6 +25,7 @@ public class UserController : ControllerBase
         return _repo.GetAll();
     }
 
+    [Authorize]
     // GET api/user/1
     [HttpGet("{id}")]
     public User Get(int id)
