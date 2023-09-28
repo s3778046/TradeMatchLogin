@@ -8,7 +8,7 @@ namespace TradeMatchLogin.Utils
     {
 
         // Create a new User object from the UserRegistrationDTO, add it to the repo and return it.
-        public static User AddUser(RegisterDto registerDto, UserRepository _userRepo)
+        public static async Task<User> AddUser(RegisterDto registerDto, UserRepository _userRepo)
         {
             // Create a new user
             var user = new User()
@@ -23,13 +23,13 @@ namespace TradeMatchLogin.Utils
                 Role = registerDto.Role,
             };
 
-            _userRepo.Add(user);
+            await _userRepo.AddAsync(user);
 
             return user;
         }
 
         // Create a new Login object from the UserRegistrationDTO, add it to the repo and return it.
-        public static Login AddLogin(RegisterDto registerDto, int userID, LoginRepository _loginRepo, string hash)
+        public static async Task<Login> AddLogin(RegisterDto registerDto, Guid userID, LoginRepository _loginRepo, string hash)
         {
             
             // Create a new login
@@ -41,13 +41,13 @@ namespace TradeMatchLogin.Utils
                 UserID = userID
             };
 
-            _loginRepo.Add(login);
+            await _loginRepo.AddAsync(login);
 
             return login;
         }
 
         // Create a new Address object from the UserRegistrationDTO and add it to the repo.
-        public static void AddAddress(RegisterDto registerDto, int userID, AddressRepository _addressRepo)
+        public static async Task<Address> AddAddress(RegisterDto registerDto, Guid userID, AddressRepository _addressRepo)
         {
             // Create a new address
             var address = new Address()
@@ -60,7 +60,9 @@ namespace TradeMatchLogin.Utils
                 UserID = userID
             };
 
-            _addressRepo.Add(address);
+            await _addressRepo.AddAsync(address);
+
+            return address;
         }
     }
 }

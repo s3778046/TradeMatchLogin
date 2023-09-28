@@ -5,7 +5,7 @@ namespace TradeMatchLogin.Models;
 public class Address
 {
    
-    public int AddressID { get; set; }
+    public Guid AddressID { get; set; }
 
     public string Number { get; set; }
 
@@ -18,5 +18,5 @@ public class Address
     public string State { get; set; }
 
     [ForeignKey("UserID")]
-    public int UserID { get; set; }
+    public Guid UserID { get; set; }
 }

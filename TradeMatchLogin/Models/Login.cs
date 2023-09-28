@@ -8,7 +8,7 @@ public class Login
     
     
     [Key]
-    public int LoginID { get; set; }
+    public Guid LoginID { get; set; }
 
     public string UserName { get; set; }
 
@@ -16,5 +16,5 @@ public class Login
 
     // UserID
     [ForeignKey("UserID")]
-    public int UserID { get; set; }
+    public Guid UserID { get; set; }
 }

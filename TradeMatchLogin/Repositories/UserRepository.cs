@@ -2,60 +2,38 @@
 using TradeMatchLogin.Models;
 using TradeMatchLogin.Repositories.Interface;
 
-namespace TradeMatchLogin.Repositories;
+namespace TradeMatchLogin.Repositories
+{ 
 
-public class UserRepository : IDataRepository<User, int>
-{
-    private readonly TradeMatchContext _context;
+    public class UserRepository : AGenericRepository<User, Guid>, IUserRepository
 
-    public UserRepository(TradeMatchContext context)
     {
-        _context = context;
+        public UserRepository(TradeMatchContext context) : base(context) { }
+
+
+        public override async Task<IEnumerable<User>> GetAllAsync()
+        {
+            return await base.GetAllAsync();
+        }
+
+        public override async Task<User> AddAsync(User entity)
+        {
+            return await base.AddAsync(entity);
+        }
+
+        public override async Task<User> DeleteAsync(Guid key)
+        {
+            return await base.DeleteAsync(key);
+        }
+
+        public override async Task<User> FindAsync(Guid key)
+        {
+            return await base.FindAsync(key);
+        }
+
+        public override async Task<User> UpdateAsync(Guid key, User entity)
+        {
+            return await base.UpdateAsync(key, entity);
+        }
     }
-
-    public User Get(int id)
-    {
-        return _context.User.Find(id);
-    }
-
-    public IEnumerable<User> GetAll()
-    {
-        return _context.User.ToList();
-    }
-
-    public int Add(User user)
-    {
-        _context.User.Add(user);
-        _context.SaveChanges();
-
-        return user.UserID;
-    }
-
-    public int Delete(int id)
-    {
-        _context.User.Remove(_context.User.Find(id));
-        _context.SaveChanges();
-
-        return id;
-    }
-
-    public int Update(int id, User user)
-    {
-        _context.Update(user);
-        _context.SaveChanges();
-
-        return id;
-    }
-
-    IEnumerable<User> IDataRepository<User, int>.GetAll()
-    {
-        throw new NotImplementedException();
-    }
-
-    User IDataRepository<User, int>.Get(int id)
-    {
-        throw new NotImplementedException();
-    }
-
-
 }

@@ -2,59 +2,38 @@
 using TradeMatchLogin.Models;
 using TradeMatchLogin.Repositories.Interface;
 
-namespace TradeMatchLogin.Repositories;
-
-public class AddressRepository : IDataRepository<Address, int>
+namespace TradeMatchLogin.Repositories
 {
-    private readonly TradeMatchContext _context;
 
-    public AddressRepository(TradeMatchContext context)
-    {
-        _context = context;
+    public class AddressRepository : AGenericRepository<Address, Guid>, IAddressRepository
+
+{
+        public AddressRepository(TradeMatchContext context) : base(context) { }
+
+
+        public override async Task<IEnumerable<Address>> GetAllAsync()
+        {
+            return await base.GetAllAsync();
+        }
+
+        public override async Task<Address> AddAsync(Address entity)
+        {
+            return await base.AddAsync(entity);
+        }
+
+        public override async Task<Address> DeleteAsync(Guid key)
+        {
+            return await base.DeleteAsync(key);
+        }
+
+        public override async Task<Address> FindAsync(Guid key)
+        {
+            return await base.FindAsync(key);
+        }
+
+        public override async Task<Address> UpdateAsync(Guid key, Address entity)
+        {
+            return await base.UpdateAsync(key, entity);
+        }
     }
-
-    public Address Get(int id)
-    {
-        return _context.Address.Find(id);
-    }
-
-    public IEnumerable<Address> GetAll()
-    {
-        return _context.Address.ToList();
-    }
-
-    public int Add(Address address)
-    {
-        _context.Address.Add(address);
-        _context.SaveChanges();
-
-        return address.AddressID;
-    }
-
-    public int Delete(int id)
-    {
-        _context.Address.Remove(_context.Address.Find(id));
-        _context.SaveChanges();
-
-        return id;
-    }
-
-    public int Update(int id, Address address)
-    {
-        _context.Update(address);
-        _context.SaveChanges();
-
-        return id;
-    }
-
-    IEnumerable<Address> IDataRepository<Address, int>.GetAll()
-    {
-        throw new NotImplementedException();
-    }
-
-    Address IDataRepository<Address, int>.Get(int id)
-    {
-        throw new NotImplementedException();
-    }
-
 }
