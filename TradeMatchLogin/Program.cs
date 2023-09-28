@@ -8,6 +8,7 @@ using TradeMatchLogin.DataContext;
 using TradeMatchLogin.Dtos;
 using TradeMatchLogin.Models;
 using TradeMatchLogin.Repositories;
+using TradeMatchLogin.Utils;
 using TradeMatchLogin.Validator;
 using TradeMatchLogin.Validators.DtoValidators;
 
@@ -26,22 +27,19 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(jwt =>
+
+}).AddJwtBearer(jwt =>
 {
-    var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("JwtConfig:Secret").Value);
+    var SecretKey = Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Secret"]!);
 
-    jwt.SaveToken = true;
-    jwt.TokenValidationParameters = new TokenValidationParameters()
+    jwt.TokenValidationParameters = new TokenValidationParameters
     {
+        //ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(SecretKey),
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-
-        // Switch ValidateIssuer andValidateAudience to true for production.
-        ValidateIssuer = false,
+        ValidateIssuer = true,
         ValidateAudience = false,
-        RequireExpirationTime = false, // Look into refresh tokens as token will need to be updated in production environment
-        ValidateLifetime = true
+        ValidateLifetime = true,
     };
 });
 
@@ -56,6 +54,9 @@ builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<Address>, AddressValidator>();
 builder.Services.AddScoped<IValidator<Login>, LoginValidator>();
+
+// Add JwtGenerator
+builder.Services.AddScoped<JwtGenerator>();
 
 builder.Services.AddControllers();
 
