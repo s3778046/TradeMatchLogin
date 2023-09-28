@@ -31,14 +31,14 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(jwt =>
 {
     var SecretKey = Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Secret"]!);
-
+    jwt.SaveToken = true;
     jwt.TokenValidationParameters = new TokenValidationParameters
     {
-        //ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
         IssuerSigningKey = new SymmetricSecurityKey(SecretKey),
         ValidateIssuerSigningKey = true,
-        ValidateIssuer = true,
+        ValidateIssuer = false,
         ValidateAudience = false,
+        RequireExpirationTime = false,
         ValidateLifetime = true,
     };
 });

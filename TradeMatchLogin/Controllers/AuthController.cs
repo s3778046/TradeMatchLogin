@@ -57,9 +57,9 @@ namespace TradeMatchLogin.Controllers
                 var hash = simpleHash.Compute(registerDto.Password);
 
                 // Add registerDTO data to relevent user models.
-                var user = RepositoryUtils.AddUser(registerDto, _userRepo);
-                var login = RepositoryUtils.AddLogin(registerDto, user.UserID, _loginRepo, hash);
-                RepositoryUtils.AddAddress(registerDto, user.UserID, _addressRepo);
+                var user = await RepositoryUtils.AddUser(registerDto, _userRepo);
+                await RepositoryUtils.AddLogin(registerDto, user.UserID, _loginRepo, hash);
+                await RepositoryUtils.AddAddress(registerDto, user.UserID, _addressRepo);
 
                 // Generate a json web token
                 var token = _jwtGenerator.GenerateJsonWebToken(user);
@@ -91,7 +91,7 @@ namespace TradeMatchLogin.Controllers
                     return BadRequestWithMessage("Invalid credentials");
                 }
 
-                var user = _userRepo.Get(login.UserID);
+                var user = await _userRepo.FindAsync(login.UserID);
 
                 // Generate a json web token
                 var token = _jwtGenerator.GenerateJsonWebToken(user);

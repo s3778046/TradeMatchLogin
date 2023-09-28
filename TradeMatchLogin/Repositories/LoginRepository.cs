@@ -5,19 +5,50 @@ using TradeMatchLogin.Repositories.Interface;
 
 namespace TradeMatchLogin.Repositories;
 
-public class LoginRepository : IDataRepository<Login, int>
+public class LoginRepository : AGenericRepository<Login, Guid>, ILoginRepository
 {
-    private readonly TradeMatchContext _context;
 
-    public LoginRepository(TradeMatchContext context)
+    public LoginRepository(TradeMatchContext context) : base(context) { }
+
+
+    public override async Task<IEnumerable<Login>> GetAllAsync()
     {
-        _context = context;
+        return await base.GetAllAsync();
     }
 
-    public Login Get(int id)
+    public override async Task<Login> AddAsync(Login entity)
     {
-        return _context.Login.Find(id);
+        return await base.AddAsync(entity);
     }
+
+    public override async Task<Login> DeleteAsync(Guid key)
+    {
+        return await base.DeleteAsync(key);
+    }
+
+    public override async Task<Login> FindAsync(Guid key)
+    {
+        return await base.FindAsync(key);
+    }
+
+    public override async Task<Login> UpdateAsync(Guid key, Login entity)
+    {
+        return await base.UpdateAsync(key, entity);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public async Task<Login> GetByUserNameAsync(string username)
     {
@@ -25,44 +56,4 @@ public class LoginRepository : IDataRepository<Login, int>
 
         return login;
     }
-
-    public IEnumerable<Login> GetAll()
-    {
-        return _context.Login.ToList();
-    }
-
-    public int Add(Login login)
-    {
-        _context.Login.Add(login);
-        _context.SaveChanges();
-
-        return login.LoginID;
-    }
-
-    public int Delete(int id)
-    {
-        _context.Login.Remove(_context.Login.Find(id));
-        _context.SaveChanges();
-
-        return id;
-    }
-
-    public int Update(int id, Login login)
-    {
-        _context.Update(login);
-        _context.SaveChanges();
-
-        return id;
-    }
-
-    IEnumerable<Login> IDataRepository<Login, int>.GetAll()
-    {
-        throw new NotImplementedException();
-    }
-
-    Login IDataRepository<Login, int>.Get(int id)
-    {
-        throw new NotImplementedException();
-    }
-
 }
