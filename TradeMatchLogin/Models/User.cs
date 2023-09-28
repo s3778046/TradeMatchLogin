@@ -22,4 +22,6 @@ public class User
     public string BusinessName { get; set; }
 
     public string Status { get; set; }
+
+    public string Role { get; set; }
 }

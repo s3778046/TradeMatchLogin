@@ -1,17 +1,16 @@
 ﻿using FluentValidation;
-using TradeMatchLogin.DTOs;
+using TradeMatchLogin.Dtos;
 using TradeMatchLogin.Models;
 
-namespace TradeMatchLogin.Validators.DTOValidators
+namespace TradeMatchLogin.Validators.DtoValidators
 {
-    public class LoginDTOValidator : AbstractValidator<LoginDTO>
+    public class LoginDtoValidator : AbstractValidator<LoginDto>
     {
 
-        public LoginDTOValidator()
+        public LoginDtoValidator()
         {
             RuleFor(u => u.UserName).NotNull().NotEmpty().MaximumLength(50);
-            RuleFor(u => u.Password).NotNull().NotEmpty().MaximumLength(50);
-
+            RuleFor(u => u.Password).NotNull().NotEmpty().MaximumLength(94);
         }
     }
 }

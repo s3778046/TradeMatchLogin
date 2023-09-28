@@ -5,22 +5,16 @@ namespace TradeMatchLogin.Models;
 
 public class Login
 {
-    // LoginId
+    
+    
+    [Key]
     public int LoginID { get; set; }
 
-    // Username
-    [Required, StringLength(30)]
     public string UserName { get; set; }
 
-    // PasswordHash
-    [Required, StringLength(94)]
-    public string Password { get; set; }
+    public string PasswordHash { get; set; }
 
     // UserID
-    [ForeignKey("UserID"), Required]
+    [ForeignKey("UserID")]
     public int UserID { get; set; }
-
-    // Navigation Properies
-   //public virtual User User { get; set; }
-
 }

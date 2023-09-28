@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
-using TradeMatchLogin.DTOs;
+using TradeMatchLogin.Dtos;
 
-namespace TradeMatchLogin.Validators.DTOValidators
+namespace TradeMatchLogin.Validators.DtoValidators
 {
-    public class RegisterDTOValidator : AbstractValidator<RegisterDTO>
+    public class RegisterDtoValidator : AbstractValidator<RegisterDto>
     {
 
-        public RegisterDTOValidator()
+        public RegisterDtoValidator()
         {
 
             // Login
@@ -28,8 +28,6 @@ namespace TradeMatchLogin.Validators.DTOValidators
             RuleFor(u => u.ABN).MaximumLength(50);
             RuleFor(u => u.BusinessName).MaximumLength(50);
 
-            // Role
-            RuleFor(u => u.RoleType).NotNull().NotEmpty().MaximumLength(20);
         }
     }
 }

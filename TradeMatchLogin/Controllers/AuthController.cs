@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using SimpleHashing.Net;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TradeMatchLogin.DTOs;
+using TradeMatchLogin.Dtos;
 using TradeMatchLogin.Models;
 using TradeMatchLogin.Repositories;
-using TradeMatchLogin.Validators.DTOValidators;
+using TradeMatchLogin.Validators.DtoValidators;
 using ValidationResult = FluentValidation.Results.ValidationResult;
+
 
 namespace TradeMatchLogin.Controllers
 {
@@ -19,16 +21,15 @@ namespace TradeMatchLogin.Controllers
         private readonly UserRepository _userRepo;
         private readonly LoginRepository _loginRepo;
         private readonly AddressRepository _addressRepo;
-        private readonly RoleRepository _roleRepo;
         private readonly IConfiguration _configuration;
-       
+        private static readonly ISimpleHash simpleHash = new SimpleHash();
+
         // Constructor
         public AuthController(UserRepository userRepo, LoginRepository loginRepo,
-               RoleRepository roleRepo, AddressRepository addressRepo, IConfiguration configuration)
+               AddressRepository addressRepo, IConfiguration configuration)
         {
             _userRepo = userRepo;
             _loginRepo = loginRepo;
-            _roleRepo = roleRepo;
             _addressRepo = addressRepo;
             _configuration = configuration;
         }
@@ -36,19 +37,19 @@ namespace TradeMatchLogin.Controllers
         // Register route
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
 
             // Create a Fluent validator and pass request through it
-            RegisterDTOValidator validator = new();
-            ValidationResult result = validator.Validate(registerDTO);
+            RegisterDtoValidator validator = new();
+            ValidationResult result = validator.Validate(registerDto);
 
             // Validate Request by checking the result is valid 
             if (result.IsValid)
             {
 
                 // Get user from loginRepo by username.
-                var usernameExists = await _loginRepo.GetByUserNameAsync(registerDTO.UserName);
+                var usernameExists = await _loginRepo.GetByUserNameAsync(registerDto.UserName);
 
                 // If UsernameExists return a bad request with message.
                 if (usernameExists != null)
@@ -57,10 +58,9 @@ namespace TradeMatchLogin.Controllers
                 }
 
                 // Add registerDTO data to relevent user models.
-                var user = AddUser(registerDTO);
-                var login = AddLogin(registerDTO, user.UserID);
-                AddRole(registerDTO, user.UserID);
-                AddAddress(registerDTO, user.UserID);
+                var user = AddUser(registerDto);
+                var login = AddLogin(registerDto, user.UserID);
+                AddAddress(registerDto, user.UserID);
 
                 // Generate a json web token
                 var token = GenerateJsonWebToken(login);
@@ -75,9 +75,9 @@ namespace TradeMatchLogin.Controllers
         // Login route
         [Route("login")]
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDTO)
         {
-            LoginDTOValidator validator = new();
+            LoginDtoValidator validator = new();
             ValidationResult result = validator.Validate(loginDTO);
 
             // Validate Request by checking the validation result is valid 
@@ -86,14 +86,8 @@ namespace TradeMatchLogin.Controllers
                 // Get login data from loginRepo by username.
                 var login = await _loginRepo.GetByUserNameAsync(loginDTO.UserName);
 
-                // If login is null, return a bad request with message.
-                if (login == null)
-                {
-                    return BadRequestWithMessage("Invalid credentials");
-                }
-
-                // If request password is not equal to password in the login object, return a bad request with message.
-                if (!login.Password.Equals(loginDTO.Password))
+                // If login is null or passwords do not match, return a bad request with message.
+                if (login == null || string.IsNullOrEmpty(loginDTO.Password) || !simpleHash.Verify(loginDTO.Password, login.PasswordHash))
                 {
                     return BadRequestWithMessage("Invalid credentials");
                 }
@@ -138,18 +132,19 @@ namespace TradeMatchLogin.Controllers
         }
 
         // Create a new User object from the UserRegistrationDTO, add it to the repo and return it.
-        private User AddUser(RegisterDTO registerDTO)
+        private User AddUser(RegisterDto registerDto)
         {
             // Create a new user
             var user = new User()
             {
-                FirstName = registerDTO.FirstName,
-                LastName = registerDTO.LastName,
-                Phone = registerDTO.Phone,
-                Email = registerDTO.Email,
-                ABN = registerDTO.ABN,
-                BusinessName = registerDTO.BusinessName,
-                Status = "Registered"
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                Phone = registerDto.Phone,
+                Email = registerDto.Email,
+                ABN = registerDto.ABN,
+                BusinessName = registerDto.BusinessName,
+                Status = "Registered",
+                Role = registerDto.Role,
             };
 
             _userRepo.Add(user);
@@ -158,13 +153,17 @@ namespace TradeMatchLogin.Controllers
         }
 
         // Create a new Login object from the UserRegistrationDTO, add it to the repo and return it.
-        private Login AddLogin(RegisterDTO registerDTO, int userID)
+        private Login AddLogin(RegisterDto registerDto, int userID)
         {
-            // Create a new login
+            // Hash the password input
+            var hash = simpleHash.Compute(registerDto.Password);
+
+                // Create a new login
             var login = new Login()
             {
-                UserName = registerDTO.UserName,
-                Password = registerDTO.Password,
+                // Create a new instance of SimpleHash.
+                UserName = registerDto.UserName,
+                PasswordHash = hash,
                 UserID = userID
             };
 
@@ -174,33 +173,20 @@ namespace TradeMatchLogin.Controllers
         }
 
         // Create a new Address object from the UserRegistrationDTO and add it to the repo.
-        private void AddAddress(RegisterDTO registerDTO, int userID)
+        private void AddAddress(RegisterDto registerDto, int userID)
         {
             // Create a new address
             var address = new Address()
             {
-                Number = registerDTO.Number,
-                Street = registerDTO.Street,
-                Suburb = registerDTO.Suburb,
-                PostCode = registerDTO.PostCode,
-                State = registerDTO.State,
+                Number = registerDto.Number,
+                Street = registerDto.Street,
+                Suburb = registerDto.Suburb,
+                PostCode = registerDto.PostCode,
+                State = registerDto.State,
                 UserID = userID
             };
 
             _addressRepo.Add(address);
-        }
-
-        // Create a new Role object from the UserRegistrationDTO and add it to the repo.
-        private void AddRole(RegisterDTO registerDTO, int userID)
-        {
-            // Create a new role
-            var role = new Role()
-            {
-                RoleType = registerDTO.RoleType,
-                UserID = userID
-            };
-
-            _roleRepo.Add(role);
         }
 
         // Return a Bad request object with a message.

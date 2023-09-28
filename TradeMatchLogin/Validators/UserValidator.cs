@@ -15,6 +15,7 @@ namespace TradeMatchLogin.Validator
             RuleFor(u => u.ABN).MaximumLength(50);
             RuleFor(u => u.BusinessName).MaximumLength(50);
             RuleFor(u => u.Status).NotNull().NotEmpty().MaximumLength(15);
+            RuleFor(u => u.Role).NotNull().NotEmpty().MaximumLength(15);
         }
     }
 }

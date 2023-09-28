@@ -1,7 +1,7 @@
 ﻿
-namespace TradeMatchLogin.DTOs
+namespace TradeMatchLogin.Dtos
 {
-    public class RegisterDTO
+    public class RegisterDto
     {
         //
         // User Data
@@ -18,6 +18,8 @@ namespace TradeMatchLogin.DTOs
 
         public string BusinessName { get; set; }
 
+        public string Role { get; set; }
+
         //
         // Login Data
         //
@@ -25,10 +27,6 @@ namespace TradeMatchLogin.DTOs
 
         public string Password { get; set; }
 
-        //
-        // Role Data 
-        //
-        public string RoleType { get; set; }
 
         //
         //Address Data

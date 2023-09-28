@@ -60,41 +60,18 @@ namespace TradeMatchLogin.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoginID"));
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(94)
-                        .HasColumnType("nvarchar(94)");
-
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.HasKey("LoginID");
-
-                    b.ToTable("Login");
-                });
-
-            modelBuilder.Entity("TradeMatchLogin.Models.Role", b =>
-                {
-                    b.Property<int>("RoleID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleID"));
-
-                    b.Property<string>("RoleType")
+                    b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.HasKey("RoleID");
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("Role");
+                    b.HasKey("LoginID");
+
+                    b.ToTable("Login");
                 });
 
             modelBuilder.Entity("TradeMatchLogin.Models.User", b =>
@@ -121,6 +98,9 @@ namespace TradeMatchLogin.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")

@@ -1,7 +1,7 @@
 ﻿
-namespace TradeMatchLogin.DTOs
+namespace TradeMatchLogin.Dtos
 {
-    public class LoginDTO
+    public class LoginDto
     {
         
         public string UserName { get; set; }

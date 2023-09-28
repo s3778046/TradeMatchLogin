@@ -9,8 +9,7 @@ namespace TradeMatchLogin.Validator
         public LoginValidator()
         {
             RuleFor(u => u.UserName).NotNull().NotEmpty().MaximumLength(50);
-            RuleFor(u => u.Password).NotNull().NotEmpty().MaximumLength(50);
-           
+            RuleFor(u => u.PasswordHash).NotNull().NotEmpty().MaximumLength(94);
         }
     }
 }

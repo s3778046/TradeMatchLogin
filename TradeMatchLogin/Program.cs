@@ -5,11 +5,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TradeMatchLogin.Configuration;
 using TradeMatchLogin.DataContext;
-using TradeMatchLogin.DTOs;
+using TradeMatchLogin.Dtos;
 using TradeMatchLogin.Models;
 using TradeMatchLogin.Repositories;
 using TradeMatchLogin.Validator;
-using TradeMatchLogin.Validators.DTOValidators;
+using TradeMatchLogin.Validators.DtoValidators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,14 +49,13 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<LoginRepository>();
 builder.Services.AddScoped<AddressRepository>();
-builder.Services.AddScoped<RoleRepository>();
 
 // Add Validators
-builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterDTOValidator>();
-builder.Services.AddScoped<IValidator<LoginDTO>, LoginDTOValidator>();
+builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
+builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<Address>, AddressValidator>();
-builder.Services.AddScoped<IValidator<LoginDTO>, LoginDTOValidator>();
+builder.Services.AddScoped<IValidator<Login>, LoginValidator>();
 
 builder.Services.AddControllers();
 
