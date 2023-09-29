@@ -11,7 +11,7 @@
 ### https://localhost:7247/api/auth/login
 - Logs in a regigistered user (Checks username and password in login table)
 - Returns a JWT token
-- 
+  
 ## GET
 ### https://localhost:7247/api/user
 - Get all registered User (No authorization required)
