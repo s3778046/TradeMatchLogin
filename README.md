@@ -7,10 +7,10 @@
 ### https://localhost:7247/api/auth/register
 - Registers a new User 
 - Adds all user register data to relevant tables and links with foreign keys
-- returns a JWT token
+- returns a JWT
 ### https://localhost:7247/api/auth/login
-- Logs in a regigistered user (Checks username and password in login table)
-- Returns a JWT token
+- Logs in a registered user (Checks username and password in login table)
+- Returns a JWT
   
 ## GET
 ### https://localhost:7247/api/user
